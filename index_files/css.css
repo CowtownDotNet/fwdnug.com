@@ -200,7 +200,10 @@ section.feature {
 	border: currentColor; border-image: none;
 }
 .event {
-	width: 50%; float: left;
+	width: 66%; float: left;
+}
+#events {
+	width: 66%; float: left;
 }
 .map {
 	padding-left: 3em; float: left;

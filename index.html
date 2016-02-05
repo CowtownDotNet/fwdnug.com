@@ -9,6 +9,8 @@
     <link href="index_files/css.css" rel="stylesheet">
     <script src="index_files/modernizr.js"></script>
     <meta name="GENERATOR" content="MSHTML 11.00.9600.17037">
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.3/moment.js"></script>
 </head>
 <body>
     <header>
@@ -46,55 +48,19 @@
         </section>
         <section class="content-wrapper main-content clear-fix">
             <h2><bold><u>Upcoming Events</u></bold></h2>
-            <!-- Begin of Date -->
-            <h2>Next Meeting:&nbsp; January 19, 2016</h2>
-            <!-- End of Date -->
             <div class="eventWrapper" style="width: 100%;">
-                <div class="event">
-                    <!-- Begin of Title -->
-                    <h3>"Trust me, Azure event hubs are really cool!" - Harold Pulcher</h3>
-                    <!-- End of Title -->
-                    <div>
-                        <p>
-                            With all the talk about big data, Internet of things, and the value that can be derived from the analysis of all of that information, no one seems to talk about how we collect it. There are a number of traditional ways. Those ways usually have problems with how to handle data spikes, durability, and distribution for processing. Azure Event Hubs may be an answer to part of those problems. We will go over what they are, how to set them up, the costs, and the various ways to send and receive information.
-                        </p>
-                    </div>
-                    <h3>About the Speaker</h3>
-                    <div>
-                        <p>
-                            Harold Pulcher is a developer, network engineer, magician, woodworker, and part time grease monkey. He has over 25 years of experience working in Information Technology. During that time he has done everything from running network cable, setting up various companies infrastructure from the absolute bare metal, and building line of business software for many of those companies. As passionate as he is about technology, you might happen to see him checking his air reserve while at a depth of 60 feet, cooking up a mean “free-range” fruit cake, doing pre-show table magic at the improv, or making a nice piece of wood into a lot of sawdust so my wife will have potting benches for her plants.
-                        </p>
-                    </div>
-                    <h3>Parking and Meeting Location</h3>
-                    <div>
-                        <p>
-                            From Camp Bowie Blvd, turn North onto Clifton St. past two walk-over bridges. Then turn left into the UNT Health Patient Services parking lot, and park in any open slot. The entrance is at the top left of the parking lot in the building parking garage. Go to the double doors on the back left side of the parking garage and press the button on the wall labeled “PUSH TO OPEN”. Then proceed down the hallway through the next set of auto-open doors until you see the sign for LIB 110.
-                        </p>
-                        <p>
-                            <img alt="UNTHSC MAP" src="https://cdn.evbuc.com/eventlogos/48356772/unthscmap.png">
-                        </p>
-                    </div>
-                    <h3>RSVP</h3>
-                    <div>
-                        <p>To RSVP (help us to determine how much pizza to order):</p>
-                        <!-- Begin of RSVP Link -->
-                        <p>
-                            <a href="http://www.eventbrite.com/e/january-2016-meeting-tickets-20733014003?ref=ebtnebregn" target="_blank"><img src="https://www.eventbrite.com/custombutton?eid=20733014003" alt="Eventbrite - January 2016 Meeting" /></a>
-                        </p>
-                        <!-- End of RSVP Link -->
-                    </div>
-                </div>
-                
+                <div id="events">
+                </div>                
                 <div class="meetingSponsor">
                     <h3>Meeting Sponsor:&nbsp; Teksystems</h3><a href="http://www.teksystems.com/"
                                                                  target="_blank"><img style="border: currentColor; border-image: none;" src="index_files/teksystems_logo.png"></a>
                     <br><a href="http://www.teksystems.com/"
                            target="_blank">http://www.teksystems.com/</a>
                 </div>
-
             </div>
         </section>
-    </div><footer>
+    </div>
+    <footer>
         <div class="content-wrapper">
             <div class="float-left">
                 <p>© 2015 - FWDNUG</p><img width="175" src="index_files/Powered_by_O365.png">
@@ -110,6 +76,48 @@
             </div>
         </div>
     </footer>
-    <script src="index_files/jquery.js"></script>
+    <script>
+    $(document).ready(function() {
+        
+        //anon oauth token
+        var token = 'ANONAUTHTOKEN';
+        //org id
+        var organizer = '3047043034';
+
+        var $events = $("#events");
+        
+        $events.html("<i>Loading events, please stand by...</i>");
+        $.get('https://www.eventbriteapi.com/v3/events/search/?token='+token+'&organizer.id='+organizer+'&expand=venue', function(res) {
+            if(res.events.length) {
+                var s = "";
+                for(var i=0;i<res.events.length;i++) {
+                    var event = res.events[i];
+                    var eventTime = moment(event.start.local).format('MMMM Do YYYY, h:mm a') + " to " + moment(event.end.local).format('h:mm a');
+                    var eventLocation = event.venue.name;
+                    if (event.venue.address.address_2 != null) {
+                        eventLocation += "</br>" + event.venue.address.address_1 + " " + event.venue.address.address_2 + "</br>" +  event.venue.address.city + ", " + event.venue.address.region + ", " + event.venue.address.postal_code;
+                    }
+                    else {
+                        eventLocation += "</br>" + event.venue.address.address_1 + "</br>" + event.venue.address.city + ", " + event.venue.address.region + ", " + event.venue.address.postal_code;
+                    }
+                    console.dir(event);
+                    if (i=1) {
+                        s += "<h2>Next Meeting: " + eventTime + "</h2>";
+                    }
+                    s += "<div class='eventList'>";
+                    s += "<p><b>" + eventLocation + "</b></p>";                   
+                    s += "<p>" + event.description.html + "</p>";
+                    s += "<h2>RSVP</h2>";
+                    s += "<p>To RSVP (help us to determine how much food to order):</p>";
+                    s += "<p><a href='" + event.url + "&ref=ebtnebregn' target='_blank'><img src='https://www.eventbrite.com/custombutton?eid=20733014003' alt='Eventbrite - " + event.name.text + "' /></a></p>";
+                    s += "</div>";
+                }
+                $events.html(s);
+            } else {
+                $events.html("<p>Sorry, there are no upcoming events.</p>");
+            }
+        });
+    });
+    </script>
 </body>
 </html>
